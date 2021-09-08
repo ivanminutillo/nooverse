@@ -1,25 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import './index.css'
+import { useState, useEffect, useRef } from 'react'
+import { supabase } from './supabaseClient'
+import Auth from './Auth'
+import Account from './Account'
+import { Canvas, useFrame } from '@react-three/fiber'
 
-function App() {
+
+function Box(props) {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+      <boxGeometry args={[1,1,1]} />
+  )
 }
 
-export default App;
+
+export default function Home() {
+  const [session, setSession] = useState(null)
+
+  useEffect(() => {
+    setSession(supabase.auth.session())
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+  }, [])
+
+  return (
+    <div className="container" style={{ padding: '50px 0 100px 0' }}>
+      {!session ? <Auth /> : <Account key={session.user.id} session={session} />}
+      <Canvas>
+        <ambientLight />
+        <pointLight position={[10, 10, 10]} />
+        <Box position={[-1.2, 0, 0]} />
+        <Box position={[1.2, 0, 0]} />
+      </Canvas>
+    </div>
+  )
+}
